@@ -22,6 +22,9 @@ import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
+
+import org.apache.iceberg.StructLike;
+import org.apache.iceberg.data.Record;
 import org.apache.iceberg.relocated.com.google.common.hash.HashFunction;
 import org.apache.iceberg.relocated.com.google.common.hash.Hashing;
 
@@ -31,58 +34,72 @@ import org.apache.iceberg.relocated.com.google.common.hash.Hashing;
  */
 public class BucketUtil {
 
-  private static final HashFunction MURMUR3 = Hashing.murmur3_32_fixed();
+    private static final HashFunction MURMUR3 = Hashing.murmur3_32_fixed();
 
-  private BucketUtil() {}
-
-  public static int hash(int value) {
-    return MURMUR3.hashLong((long) value).asInt();
-  }
-
-  public static int hash(long value) {
-    return MURMUR3.hashLong(value).asInt();
-  }
-
-  public static int hash(float value) {
-    return MURMUR3.hashLong(Double.doubleToLongBits((double) value)).asInt();
-  }
-
-  public static int hash(double value) {
-    return MURMUR3.hashLong(Double.doubleToLongBits(value)).asInt();
-  }
-
-  public static int hash(CharSequence value) {
-    return MURMUR3.hashString(value, StandardCharsets.UTF_8).asInt();
-  }
-
-  public static int hash(ByteBuffer value) {
-    if (value.hasArray()) {
-      return MURMUR3
-          .hashBytes(value.array(), value.arrayOffset() + value.position(), value.remaining())
-          .asInt();
-    } else {
-      int position = value.position();
-      byte[] copy = new byte[value.remaining()];
-      try {
-        value.get(copy);
-      } finally {
-        // make sure the buffer position is unchanged
-        value.position(position);
-      }
-      return MURMUR3.hashBytes(copy).asInt();
+    private BucketUtil() {
     }
-  }
 
-  public static int hash(UUID value) {
-    return MURMUR3
-        .newHasher(16)
-        .putLong(Long.reverseBytes(value.getMostSignificantBits()))
-        .putLong(Long.reverseBytes(value.getLeastSignificantBits()))
-        .hash()
-        .asInt();
-  }
+    public static int hash(int value) {
+        return MURMUR3.hashLong((long) value).asInt();
+    }
 
-  public static int hash(BigDecimal value) {
-    return MURMUR3.hashBytes(value.unscaledValue().toByteArray()).asInt();
-  }
+    public static int hash(long value) {
+        return MURMUR3.hashLong(value).asInt();
+    }
+
+    public static int hash(float value) {
+        return MURMUR3.hashLong(Double.doubleToLongBits((double) value)).asInt();
+    }
+
+    public static int hash(double value) {
+        return MURMUR3.hashLong(Double.doubleToLongBits(value)).asInt();
+    }
+
+    public static int hash(CharSequence value) {
+        return MURMUR3.hashString(value, StandardCharsets.UTF_8).asInt();
+    }
+
+    public static int hash(ByteBuffer value) {
+        if (value.hasArray()) {
+            return MURMUR3
+                    .hashBytes(value.array(), value.arrayOffset() + value.position(), value.remaining())
+                    .asInt();
+        } else {
+            int position = value.position();
+            byte[] copy = new byte[value.remaining()];
+            try {
+                value.get(copy);
+            } finally {
+                // make sure the buffer position is unchanged
+                value.position(position);
+            }
+            return MURMUR3.hashBytes(copy).asInt();
+        }
+    }
+
+    public static int hash(UUID value) {
+        return MURMUR3
+                .newHasher(16)
+                .putLong(Long.reverseBytes(value.getMostSignificantBits()))
+                .putLong(Long.reverseBytes(value.getLeastSignificantBits()))
+                .hash()
+                .asInt();
+    }
+
+    public static int hash(Record value) {
+
+        for(Field field:  value.struct().fields()){
+
+        }
+        return MURMUR3
+                .newHasher(16)
+                .putBytes((ByteBuffer) value)
+                .hash()
+                .asInt();
+    }
+
+
+    public static int hash(BigDecimal value) {
+        return MURMUR3.hashBytes(value.unscaledValue().toByteArray()).asInt();
+    }
 }

@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import org.apache.iceberg.StructLike;
+import org.apache.iceberg.data.Record;
 
 public interface Type extends Serializable {
   enum TypeID {
@@ -41,7 +42,7 @@ public interface Type extends Serializable {
     FIXED(ByteBuffer.class),
     BINARY(ByteBuffer.class),
     DECIMAL(BigDecimal.class),
-    STRUCT(StructLike.class),
+    STRUCT(Record.class),
     LIST(List.class),
     MAP(Map.class);
 
