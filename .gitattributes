@@ -32,4 +32,4 @@ jitpack.yml    export-ignore
 /python/**     export-ignore
 /docs          export-ignore
 /docs/**       export-ignore
-
+* text=auto
