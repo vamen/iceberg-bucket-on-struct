@@ -21,12 +21,14 @@ package org.apache.iceberg.util;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.data.Record;
 import org.apache.iceberg.relocated.com.google.common.hash.HashFunction;
 import org.apache.iceberg.relocated.com.google.common.hash.Hashing;
+import org.apache.iceberg.types.Types;
 
 /**
  * Contains the logic for hashing various types for use with the {@code bucket} partition
@@ -88,8 +90,8 @@ public class BucketUtil {
 
     public static int hash(Record value) {
 
-        for(Field field:  value.struct().fields()){
-
+        for (Types.NestedField field : value.struct().fields()) {
+            
         }
         return MURMUR3
                 .newHasher(16)

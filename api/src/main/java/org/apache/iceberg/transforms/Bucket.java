@@ -229,6 +229,7 @@ class Bucket<T> implements Transform<T, Integer>, Serializable {
         protected int hash(CharSequence value) {
             return BucketUtil.hash(value);
         }
+
     }
 
     private static class BucketByteBuffer extends Bucket<ByteBuffer>
