@@ -24,112 +24,113 @@ import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.data.Record;
 
 public interface Type extends Serializable {
-  enum TypeID {
-    BOOLEAN(Boolean.class),
-    INTEGER(Integer.class),
-    LONG(Long.class),
-    FLOAT(Float.class),
-    DOUBLE(Double.class),
-    DATE(Integer.class),
-    TIME(Long.class),
-    TIMESTAMP(Long.class),
-    STRING(CharSequence.class),
-    UUID(java.util.UUID.class),
-    FIXED(ByteBuffer.class),
-    BINARY(ByteBuffer.class),
-    DECIMAL(BigDecimal.class),
-    STRUCT(Record.class),
-    LIST(List.class),
-    MAP(Map.class);
+    enum TypeID {
+        BOOLEAN(Boolean.class),
+        INTEGER(Integer.class),
+        LONG(Long.class),
+        FLOAT(Float.class),
+        DOUBLE(Double.class),
+        DATE(Integer.class),
+        TIME(Long.class),
+        TIMESTAMP(Long.class),
+        STRING(CharSequence.class),
+        UUID(java.util.UUID.class),
+        FIXED(ByteBuffer.class),
+        BINARY(ByteBuffer.class),
+        DECIMAL(BigDecimal.class),
+        STRUCT(StructLike.class),
+        LIST(List.class),
+        MAP(Map.class);
 
-    private final Class<?> javaClass;
+        private final Class<?> javaClass;
 
-    TypeID(Class<?> javaClass) {
-      this.javaClass = javaClass;
+        TypeID(Class<?> javaClass) {
+            this.javaClass = javaClass;
+        }
+
+        public Class<?> javaClass() {
+            return javaClass;
+        }
     }
 
-    public Class<?> javaClass() {
-      return javaClass;
-    }
-  }
+    TypeID typeId();
 
-  TypeID typeId();
-
-  default boolean isPrimitiveType() {
-    return false;
-  }
-
-  default PrimitiveType asPrimitiveType() {
-    throw new IllegalArgumentException("Not a primitive type: " + this);
-  }
-
-  default Types.StructType asStructType() {
-    throw new IllegalArgumentException("Not a struct type: " + this);
-  }
-
-  default Types.ListType asListType() {
-    throw new IllegalArgumentException("Not a list type: " + this);
-  }
-
-  default Types.MapType asMapType() {
-    throw new IllegalArgumentException("Not a map type: " + this);
-  }
-
-  default boolean isNestedType() {
-    return false;
-  }
-
-  default boolean isStructType() {
-    return false;
-  }
-
-  default boolean isListType() {
-    return false;
-  }
-
-  default boolean isMapType() {
-    return false;
-  }
-
-  default NestedType asNestedType() {
-    throw new IllegalArgumentException("Not a nested type: " + this);
-  }
-
-  abstract class PrimitiveType implements Type {
-    @Override
-    public boolean isPrimitiveType() {
-      return true;
+    default boolean isPrimitiveType() {
+        return false;
     }
 
-    @Override
-    public PrimitiveType asPrimitiveType() {
-      return this;
+    default PrimitiveType asPrimitiveType() {
+        throw new IllegalArgumentException("Not a primitive type: " + this);
     }
 
-    Object writeReplace() throws ObjectStreamException {
-      return new PrimitiveHolder(toString());
-    }
-  }
-
-  abstract class NestedType implements Type {
-    @Override
-    public boolean isNestedType() {
-      return true;
+    default Types.StructType asStructType() {
+        throw new IllegalArgumentException("Not a struct type: " + this);
     }
 
-    @Override
-    public NestedType asNestedType() {
-      return this;
+    default Types.ListType asListType() {
+        throw new IllegalArgumentException("Not a list type: " + this);
     }
 
-    public abstract List<Types.NestedField> fields();
+    default Types.MapType asMapType() {
+        throw new IllegalArgumentException("Not a map type: " + this);
+    }
 
-    public abstract Type fieldType(String name);
+    default boolean isNestedType() {
+        return false;
+    }
 
-    public abstract Types.NestedField field(int id);
-  }
+    default boolean isStructType() {
+        return false;
+    }
+
+    default boolean isListType() {
+        return false;
+    }
+
+    default boolean isMapType() {
+        return false;
+    }
+
+    default NestedType asNestedType() {
+        throw new IllegalArgumentException("Not a nested type: " + this);
+    }
+
+    abstract class PrimitiveType implements Type {
+        @Override
+        public boolean isPrimitiveType() {
+            return true;
+        }
+
+        @Override
+        public PrimitiveType asPrimitiveType() {
+            return this;
+        }
+
+        Object writeReplace() throws ObjectStreamException {
+            return new PrimitiveHolder(toString());
+        }
+    }
+
+    abstract class NestedType implements Type {
+        @Override
+        public boolean isNestedType() {
+            return true;
+        }
+
+        @Override
+        public NestedType asNestedType() {
+            return this;
+        }
+
+        public abstract List<Types.NestedField> fields();
+
+        public abstract Type fieldType(String name);
+
+        public abstract Types.NestedField field(int id);
+    }
 }

@@ -26,6 +26,7 @@ import java.util.UUID;
 
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.data.Record;
+import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.hash.HashFunction;
 import org.apache.iceberg.relocated.com.google.common.hash.Hashing;
 import org.apache.iceberg.types.Types;
@@ -88,16 +89,23 @@ public class BucketUtil {
                 .asInt();
     }
 
-    public static int hash(Record value) {
 
-        for (Types.NestedField field : value.struct().fields()) {
-            
+    public static int hash(Record record) {
+
+        String hash = "";
+        //  sort field by id
+        for (Types.NestedField field : record.struct().fields()) {
+            Preconditions.checkArgument(field.type().isNestedType(), "when bucketing on multiple columns, bucketing columns cannot be of nested field type");
+            if (record.getField(field.name()) != null) {
+                hash += field.name() + 0x1F + record.getField(field.name()).toString() + 0x1F;
+            } else {
+                hash += field.name() + 0x1F + 0x1F;
+            }
         }
         return MURMUR3
                 .newHasher(16)
-                .putBytes((ByteBuffer) value)
-                .hash()
-                .asInt();
+                .putString(hash, StandardCharsets.UTF_8)
+                .hash().asInt();
     }
 
 

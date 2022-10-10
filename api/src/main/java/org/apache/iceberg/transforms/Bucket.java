@@ -68,6 +68,8 @@ class Bucket<T> implements Transform<T, Integer>, Serializable {
                 return (B) new BucketByteBuffer(numBuckets);
             case UUID:
                 return (B) new BucketUUID(numBuckets);
+            case STRUCT:
+                return (B) new BucketStruct(numBuckets);
             default:
                 throw new IllegalArgumentException("Cannot bucket by type: " + type);
         }
