@@ -28,6 +28,7 @@ import org.apache.iceberg.data.Record;
 import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.hash.HashFunction;
 import org.apache.iceberg.relocated.com.google.common.hash.Hashing;
+import org.apache.iceberg.types.Type;
 import org.apache.iceberg.types.Types;
 
 /**
@@ -94,22 +95,20 @@ public class BucketUtil {
      */
     public static int hash(Record record) {
 
-        String hash = "";
-        List<Types.NestedField> fields = new ArrayList<>();
-        Collections.copy(record.struct().fields(), fields);
-        fields.sort(Comparator.comparing(obj -> obj.fieldId()));
+        String concatenatedValue = "";
+        List<Types.NestedField> fields = new ArrayList<>(record.copy().struct().fields());
+        fields.sort(Comparator.comparing(Types.NestedField::fieldId));
         for (Types.NestedField field : fields) {
-            Preconditions.checkArgument(field.type().isNestedType(), "when bucketing on multiple columns, bucketing columns cannot be of nested field type");
+            Preconditions.checkArgument(!field.type().isNestedType(), "when bucketing on multiple columns, bucketing columns cannot be of nested field type");
             if (record.getField(field.name()) != null) {
-                hash += field.name() + 0x1F + record.getField(field.name()).toString() + 0x1F;
+                concatenatedValue += field.name() + 0x1F + record.getField(field.name()).toString() + 0x1F;
             } else {
-                hash += field.name() + 0x1F + 0x1F;
+                concatenatedValue += field.name() + 0x1F + 0x1F;
             }
         }
+        System.out.println("concat value " + concatenatedValue);
         return MURMUR3
-                .newHasher(16)
-                .putString(hash, StandardCharsets.UTF_8)
-                .hash().asInt();
+                .hashString(concatenatedValue, StandardCharsets.UTF_8).asInt();
     }
 
 
