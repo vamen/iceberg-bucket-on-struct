@@ -21,8 +21,7 @@ package org.apache.iceberg.util;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import org.apache.iceberg.StructLike;
 import org.apache.iceberg.data.Record;
@@ -90,11 +89,16 @@ public class BucketUtil {
     }
 
 
+    /**
+     *
+     */
     public static int hash(Record record) {
 
         String hash = "";
-        //  sort field by id
-        for (Types.NestedField field : record.struct().fields()) {
+        List<Types.NestedField> fields = new ArrayList<>();
+        Collections.copy(record.struct().fields(), fields);
+        fields.sort(Comparator.comparing(obj -> obj.fieldId()));
+        for (Types.NestedField field : fields) {
             Preconditions.checkArgument(field.type().isNestedType(), "when bucketing on multiple columns, bucketing columns cannot be of nested field type");
             if (record.getField(field.name()) != null) {
                 hash += field.name() + 0x1F + record.getField(field.name()).toString() + 0x1F;
