@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A default {@link MetricsReporter} implementation that logs the {@link ScanReport} to the log
+ * A default {@link MetricsReporter} implementation that logs the {@link MetricsReport} to the log
  * file.
  */
 public class LoggingMetricsReporter implements MetricsReporter {
