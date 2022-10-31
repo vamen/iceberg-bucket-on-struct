@@ -21,9 +21,15 @@ package org.apache.iceberg.util;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
+import org.apache.iceberg.data.Record;
+import org.apache.iceberg.relocated.com.google.common.base.Preconditions;
 import org.apache.iceberg.relocated.com.google.common.hash.HashFunction;
 import org.apache.iceberg.relocated.com.google.common.hash.Hashing;
+import org.apache.iceberg.types.Types;
 
 /**
  * Contains the logic for hashing various types for use with the {@code bucket} partition
@@ -81,6 +87,25 @@ public class BucketUtil {
         .hash()
         .asInt();
   }
+
+  public static int hash(Record record) {
+
+    String concatenatedValue = "";
+    List<Types.NestedField> fields = new ArrayList<>(record.copy().struct().fields());
+    fields.sort(Comparator.comparing(Types.NestedField::fieldId));
+    for (Types.NestedField field : fields) {
+      Preconditions.checkArgument(!field.type().isNestedType(), "when bucketing on multiple columns, bucketing columns cannot be of nested field type");
+      if (record.getField(field.name()) != null) {
+        concatenatedValue += field.name() + 0x1F + record.getField(field.name()).toString() + 0x1F;
+      } else {
+        concatenatedValue += field.name() + 0x1F + 0x1F;
+      }
+    }
+    System.out.println("concat value " + concatenatedValue);
+    return MURMUR3
+            .hashString(concatenatedValue, StandardCharsets.UTF_8).asInt();
+  }
+
 
   public static int hash(BigDecimal value) {
     return MURMUR3.hashBytes(value.unscaledValue().toByteArray()).asInt();
