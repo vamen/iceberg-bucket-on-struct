@@ -333,7 +333,7 @@ public class Spark3Util {
     if (expr instanceof Transform) {
       Transform transform = (Transform) expr;
       Preconditions.checkArgument(
-          "zorder".equals(transform.name()) || transform.references().length == 1,
+          "zorder".equals(transform.name()) || "bucket".equals(transform.name()) || transform.references().length == 1,
           "Cannot convert transform with more than one column reference: %s",
           transform);
       String colName = DOT.join(transform.references()[0].fieldNames());
