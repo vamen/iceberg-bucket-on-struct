@@ -266,8 +266,8 @@ def test_deleting_s3_file_no_permission():
     s3fs_mock = MagicMock()
     s3fs_mock.delete_file.side_effect = OSError("AWS Error [code 15]")
 
-    with patch.object(PyArrowFileIO, "_get_fs_and_path") as submocked:
-        submocked.return_value = (s3fs_mock, "bar/foo.txt")
+    with patch.object(PyArrowFileIO, "_get_fs") as submocked:
+        submocked.return_value = s3fs_mock
 
         with pytest.raises(PermissionError) as exc_info:
             PyArrowFileIO().delete("s3://foo/bar.txt")
@@ -281,8 +281,8 @@ def test_deleting_s3_file_not_found():
     s3fs_mock = MagicMock()
     s3fs_mock.delete_file.side_effect = OSError("Path does not exist")
 
-    with patch.object(PyArrowFileIO, "_get_fs_and_path") as submocked:
-        submocked.return_value = (s3fs_mock, "bar/foo.txt")
+    with patch.object(PyArrowFileIO, "_get_fs") as submocked:
+        submocked.return_value = s3fs_mock
 
         with pytest.raises(FileNotFoundError) as exc_info:
             PyArrowFileIO().delete("s3://foo/bar.txt")
@@ -364,12 +364,12 @@ def test_time_type_to_pyarrow():
 
 def test_timestamp_type_to_pyarrow():
     iceberg_type = TimestampType()
-    assert visit(iceberg_type, _ConvertToArrowSchema()) == pa.timestamp(unit="ms")
+    assert visit(iceberg_type, _ConvertToArrowSchema()) == pa.timestamp(unit="us")
 
 
 def test_timestamptz_type_to_pyarrow():
     iceberg_type = TimestamptzType()
-    assert visit(iceberg_type, _ConvertToArrowSchema()) == pa.timestamp(unit="ms", tz="+00:00")
+    assert visit(iceberg_type, _ConvertToArrowSchema()) == pa.timestamp(unit="us", tz="+00:00")
 
 
 def test_string_type_to_pyarrow():
